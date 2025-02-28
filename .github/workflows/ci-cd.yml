@@ -15,24 +15,26 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-      
+
       - name: Install Docker and Docker Compose
         run: |
           sudo apt-get update
-          sudo apt-get install -y ca-certificates curl gnupg
-          sudo mkdir -p /etc/apt/keyrings
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo tee /etc/apt/keyrings/docker.gpg > /dev/null
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt-get install -y ca-certificates curl gnupg lsb-release
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo tee /etc/apt/trusted.gpg.d/docker.asc
+          echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
           sudo apt-get update
-          sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+          sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+          sudo apt-get install -y docker-compose
+          sudo usermod -aG docker $USER  # Donne les droits d'exécution à Docker
 
+      # 4. Lancer Docker Compose
       - name: Run Docker Compose
         run: |
           pwd
           ls -al
           sudo docker volume ls
-          sudo docker compose down || true
-          sudo docker compose up --build -d
+          sudo docker-compose down || true
+          sudo docker-compose up --build -d
           sudo docker image prune -f
           sudo docker ps
 
